@@ -1,0 +1,2 @@
+statsmodels
+pywavelets
