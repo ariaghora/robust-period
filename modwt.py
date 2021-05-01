@@ -38,6 +38,7 @@ def modwt(x, filters, level):
     for j in range(level):
         w = circular_convolve_d(h_t, v_j_1, j + 1)
         v_j_1 = circular_convolve_d(g_t, v_j_1, j + 1)
-        wavecoeff.append(w)
+        if j > 0:
+            wavecoeff.append(w)
     wavecoeff.append(v_j_1)
     return np.vstack(wavecoeff)
