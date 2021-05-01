@@ -107,7 +107,7 @@ def plot_robust_period(periods, W, bivar, periodograms, pval, ACF):
 
 
 if __name__ == '__main__':
-    m = 500
+    m = 1000
     y1 = sinewave(m, 20, 1)
     y2 = sinewave(m, 50, 1)
     y3 = sinewave(m, 100, 1)
@@ -118,7 +118,7 @@ if __name__ == '__main__':
 
     lmb = 1000000
     c = 2
-    num_wavelets = 2
+    num_wavelets = 8
 
     res = robust_period(y, 'db4', num_wavelets, lmb, c)
 
