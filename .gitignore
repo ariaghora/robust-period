@@ -3,3 +3,4 @@ __pycache__
 *.docx
 report
 .DS_Store
+*.csv

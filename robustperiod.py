@@ -5,6 +5,7 @@ from statsmodels.tsa.filters.hp_filter import hpfilter
 
 from utils import sinewave, triangle
 from mperioreg import m_perio_reg
+from huberacf import huber_acf, huber_acf_2
 
 
 def extract_trend(y, reg):
@@ -26,7 +27,7 @@ def residual_autocov(x, c):
     return huber_func((x - mu)/s, c)
 
 
-def robust_period(x, wavelet_method, num_wavelet, lmb, c):
+def robust_period(x, wavelet_method, num_wavelet, lmb, c, zeta=1.345):
     '''
     Params:
     - x: input signal with shape of (m, n), m is the number of observation and
@@ -35,6 +36,7 @@ def robust_period(x, wavelet_method, num_wavelet, lmb, c):
     - num_wavelet:
     - lmb: Lambda (regularization param) in Hodrick–Prescott (HP) filter
     - c: Huber function hyperparameter
+    - zeta: M-Periodogram hyperparameter
 
     Returns:
     Array of periods
@@ -52,6 +54,9 @@ def robust_period(x, wavelet_method, num_wavelet, lmb, c):
     plt.legend()
     plt.show()
 
+    plt.plot(y_prime)
+    plt.show()
+
     # 2) Decoupling multiple periodicities
     # ------------------------------------
     # Perform MODWT and ranking by robust wavelet variance
@@ -61,7 +66,7 @@ def robust_period(x, wavelet_method, num_wavelet, lmb, c):
 
     # 3) Robust single periodicity detection
     # --------------------------------------
-    # Compute Huber periodogram and Huber ACF
+    # Compute Huber periodogram
     X = np.hstack([W, np.zeros_like(W)])
 
     # TODO implement concurrent periodogram extraction for several series
@@ -70,6 +75,13 @@ def robust_period(x, wavelet_method, num_wavelet, lmb, c):
         print(f'Calculating periodogram for level {i+1}')
         periodograms.append(m_perio_reg(x))
     periodograms = np.array(periodograms)
+    np.savetxt('periodograms.csv', periodograms, delimiter=',')
+
+    # Compute Huber ACF
+    ACF = []
+    for periodogram in periodograms:
+        ACF.append(huber_acf(periodogram))
+    ACF = np.array(ACF)
 
     # plt.plot(periodogram[:1000])
     # plt.show()
@@ -80,24 +92,25 @@ def robust_period(x, wavelet_method, num_wavelet, lmb, c):
         None,          # bivar
         periodograms,  # P
         None,          # pval
-        None           # ACF
+        ACF            # ACF
     )
 
 
 def plot_robust_period(periods, W, bivar, periodograms, pval, ACF):
     nrows = W.shape[0]
     n_prime = periodograms.shape[1]
-    fig, axs = plt.subplots(nrows, 3, sharex=True,
+    fig, axs = plt.subplots(nrows, 3, sharex=False,
                             sharey=False, constrained_layout=True)
 
     for i in range(nrows):
         axs[i, 0].plot(W[i], color='green', linewidth=1)
         axs[i, 0].set(ylabel=f'Level {i+1}')
-        axs[i, 0].set_title('Wavelet Coef: Var=NULL', fontsize=8)
+        axs[i, 0].set_title('Wavelet Coef: Var=0', fontsize=8)
         axs[i, 1].plot(periodograms[i][:n_prime//2], color='red', linewidth=1)
-        axs[i, 1].set_title('Periodogram: p=NULL; per_T=NULL', fontsize=8)
+        axs[i, 1].set_title('Periodogram: p=0; per_T=0', fontsize=8)
+        axs[i, 2].plot(ACF[i][:int(0.8 * (n_prime//2))], color='blue', linewidth=1)
         axs[i, 2].set_title(
-            'ACF: acf_T=NULL; fin_T=NULL; Period=False', fontsize=8)
+            'ACF: acf_T=0; fin_T=0; Period=False', fontsize=8)
         for j in range(3):
             axs[i, j].tick_params(axis='both', which='major', labelsize=8)
             axs[i, j].tick_params(axis='both', which='minor', labelsize=8)
@@ -116,13 +129,13 @@ if __name__ == '__main__':
     y = y1+y2+y3+tri+noise
     y[m//2] += 10  # sudden spike
 
-    lmb = 1000000
+    lmb = 10000000
     c = 2
     num_wavelets = 8
+    zeta = 1.345
 
-    res = robust_period(y, 'db4', num_wavelets, lmb, c)
+    res = robust_period(y, 'db10', num_wavelets, lmb, c, zeta)
 
-    W = res[1]
-    periodograms = res[3]
+    _, W, _, periodograms, _, ACF = res
 
-    plot_robust_period(None, W, None, periodograms, None, None)
+    plot_robust_period(None, W, None, periodograms, None, ACF)
