@@ -21,7 +21,8 @@ def huber_acf(periodogram):
     denom = (N - np.arange(0, N)) * P[0]
     res = P[:N] / denom
 
-    return 2 * ((res - res.min()) / (res.max() - res.min())) - 1
+    # return 2 * ((res - res.min()) / (res.max() - res.min())) - 1
+    return res
 
 
 def gmat(n):
