@@ -129,6 +129,8 @@ def plot_robust_period(periods, W, bivar, periodograms, pval, ACF):
 
     plt.plot(bivar, linestyle='dashed', marker='s',
              label='robust wavelet variance')
+    plt.xlabel('Wavelet level')
+    plt.ylabel('Wavelet variance')
     plt.legend()
     plt.show()
 
