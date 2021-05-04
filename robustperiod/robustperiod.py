@@ -7,7 +7,7 @@ from scipy.signal import find_peaks
 from .modwt import modwt
 from .utils import sinewave, triangle
 from .mperioreg import m_perio_reg
-from .huberacf import huber_acf
+from .huberacf import huber_acf, get_ACF_period
 
 
 def extract_trend(y, reg):
@@ -62,9 +62,6 @@ def robust_period(x, wavelet_method, num_wavelet, lmb, c, zeta=1.345):
     # autocorrelation to remove extreme outliers.
     trend, y_hat = extract_trend(x, lmb)
     y_prime = residual_autocov(y_hat, c)
-    plt.plot(x)
-    plt.plot(trend)
-    plt.show()
 
     # 2) Decoupling multiple periodicities
     # ------------------------------------
@@ -118,6 +115,15 @@ def plot_robust_period(periods, W, bivar, periodograms, pval, ACF):
 
     per_Ts = (n_prime / periodograms.argmax(1)).astype(int)
 
+    acf_periods = []
+    final_periods = []
+    peaks_arr = []
+    for p in periodograms:
+        acf_period, final_period, peaks = get_ACF_period(ACF, p)
+        acf_periods.append(acf_period)
+        final_periods.append(final_period)
+        peaks_arr.append(peaks)
+
     ACF = ACF[:, :int(0.8 * (n_prime//2))]
     ACF = 2 * ((ACF - ACF.min(1, keepdims=True)) /
                (ACF.max(1, keepdims=True) - ACF.min(1, keepdims=True))) - 1
@@ -125,12 +131,12 @@ def plot_robust_period(periods, W, bivar, periodograms, pval, ACF):
     for i in range(nrows):
         axs[i, 0].plot(W[i], color='green', linewidth=1)
         axs[i, 0].set(ylabel=f'Level {i+1}')
-        axs[i, 0].set_title(f'Wavelet Coef: Var={bivar[i]}', fontsize=8)
+        axs[i, 0].set_title(f'Wavelet Coef: Var={bivar[i]:.5f}', fontsize=8)
         axs[i, 1].plot(periodograms[i][:n_prime//2], color='red', linewidth=1)
         axs[i, 1].set_title(f'Periodogram: p=0; per_T={per_Ts[i]}', fontsize=8)
         axs[i, 2].plot(ACF[i], color='blue', linewidth=1)
         axs[i, 2].set_title(
-            'ACF: acf_T=0; fin_T=0; Period=False', fontsize=8)
+            f'ACF: acf_T={acf_periods[i]}; fin_T={final_periods[i]}; Period={final_periods[i]>0}', fontsize=8)
         # axs[i, 2].set_ylim((-1, 1))
         for j in range(3):
             axs[i, j].tick_params(axis='both', which='major', labelsize=8)
