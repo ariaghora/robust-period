@@ -32,3 +32,12 @@ periods, W, bivar, periodograms, _, ACF = robust_period(y,
 
 plot_robust_period(periods, W, bivar, periodograms, None, ACF)
 ```
+
+## Output
+<p align="center">
+  <img src="resources/full.png" width=600/>
+</p>
+
+<p align="center">
+  <img src="resources/variance.png" width=500/>
+</p>
