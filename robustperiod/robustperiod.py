@@ -1,12 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from modwt import modwt
-from statsmodels.tsa.filters.hp_filter import hpfilter
 from astropy.stats import biweight_midvariance
+from statsmodels.tsa.filters.hp_filter import hpfilter
+from scipy.signal import find_peaks
 
-from utils import sinewave, triangle
-from mperioreg import m_perio_reg
-from huberacf import huber_acf, huber_acf_2
+from .modwt import modwt
+from .utils import sinewave, triangle
+from .mperioreg import m_perio_reg
+from .huberacf import huber_acf
 
 
 def extract_trend(y, reg):
@@ -37,14 +38,19 @@ def robust_period(x, wavelet_method, num_wavelet, lmb, c, zeta=1.345):
     Params:
     - x: input signal with shape of (m, n), m is the number of observation and
          n is the number of series
-    - wavelet_method: 
+    - wavelet_method:
     - num_wavelet:
     - lmb: Lambda (regularization param) in Hodrick–Prescott (HP) filter
     - c: Huber function hyperparameter
     - zeta: M-Periodogram hyperparameter
 
     Returns:
-    Array of periods
+    - Array of periods
+    - Wavelets
+    - bivar
+    - Periodograms
+    - pval
+    - ACF
     '''
 
     assert wavelet_method.startswith('db'), \
@@ -56,6 +62,9 @@ def robust_period(x, wavelet_method, num_wavelet, lmb, c, zeta=1.345):
     # autocorrelation to remove extreme outliers.
     trend, y_hat = extract_trend(x, lmb)
     y_prime = residual_autocov(y_hat, c)
+    plt.plot(x)
+    plt.plot(trend)
+    plt.show()
 
     # 2) Decoupling multiple periodicities
     # ------------------------------------
@@ -63,36 +72,39 @@ def robust_period(x, wavelet_method, num_wavelet, lmb, c, zeta=1.345):
     W = modwt(y_prime, wavelet_method, level=num_wavelet)
 
     # compute wavelet variance for all levels
-    bivar = np.array([biweight_midvariance(w) for w in W]).reshape(-1, 1)
+    # TODO Clarifying Lj, so we can omit first Lj from wj
+    bivar = np.array([biweight_midvariance(w) for w in W])
 
     # 3) Robust single periodicity detection
     # --------------------------------------
     # Compute Huber periodogram
     X = np.hstack([W, np.zeros_like(W)])
 
-    # TODO implement concurrent periodogram extraction for several series
     periodograms = []
     for i, x in enumerate(X):
         print(f'Calculating periodogram for level {i+1}')
         periodograms.append(m_perio_reg(x))
     periodograms = np.array(periodograms)
+    np.savetxt('periodograms.csv', periodograms, delimiter=',')
 
     # TODO Compute p-value
 
-    # TODO remove this line at the end
-    np.savetxt('periodograms.csv', periodograms, delimiter=',')
-
     # Compute Huber ACF
-    ACF = []
-    for periodogram in periodograms:
-        ACF.append(huber_acf(periodogram))
-    ACF = np.array(ACF)
+    ACF = np.array([huber_acf(p) for p in periodograms])
+
+    periods = []
+    for acf in ACF:
+        peaks, _ = find_peaks(acf)
+        distances = np.diff(peaks)
+        final_period = np.median(distances)
+        periods.append(final_period)
+    periods = np.array(periods)
 
     return (
-        None,          # Periods
+        periods,       # Periods
         W,             # Wavelets
         bivar,         # bivar
-        periodograms,  # P
+        periodograms,  # periodograms
         None,          # pval
         ACF            # ACF
     )
@@ -113,7 +125,7 @@ def plot_robust_period(periods, W, bivar, periodograms, pval, ACF):
     for i in range(nrows):
         axs[i, 0].plot(W[i], color='green', linewidth=1)
         axs[i, 0].set(ylabel=f'Level {i+1}')
-        axs[i, 0].set_title('Wavelet Coef: Var=0', fontsize=8)
+        axs[i, 0].set_title(f'Wavelet Coef: Var={bivar[i]}', fontsize=8)
         axs[i, 1].plot(periodograms[i][:n_prime//2], color='red', linewidth=1)
         axs[i, 1].set_title(f'Periodogram: p=0; per_T={per_Ts[i]}', fontsize=8)
         axs[i, 2].plot(ACF[i], color='blue', linewidth=1)
@@ -128,30 +140,8 @@ def plot_robust_period(periods, W, bivar, periodograms, pval, ACF):
     plt.show()
 
     plt.plot(bivar, linestyle='dashed', marker='s',
-             label='robust wavelet variance')
+             label='Wavelet variance')
     plt.xlabel('Wavelet level')
     plt.ylabel('Wavelet variance')
     plt.legend()
     plt.show()
-
-
-if __name__ == '__main__':
-    m = 1000
-    y1 = sinewave(m, 20, 1)
-    y2 = sinewave(m, 50, 1)
-    y3 = sinewave(m, 100, 1)
-    tri = triangle(m, 10)
-    noise = np.random.normal(0, 0.1, m)
-    y = y1+y2+y3+tri+noise
-    y[m//2] += 10  # sudden spike
-
-    lmb = 10000000
-    c = 2
-    num_wavelets = 8
-    zeta = 1.345
-
-    res = robust_period(y, 'db10', num_wavelets, lmb, c, zeta)
-
-    _, W, bivar, periodograms, _, ACF = res
-
-    plot_robust_period(None, W, bivar, periodograms, None, ACF)
