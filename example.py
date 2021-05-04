@@ -17,7 +17,7 @@ if __name__ == '__main__':
     num_wavelets = 8
     zeta = 1.345
 
-    _, W, bivar, periodograms, _, ACF = robust_period(
+    periods, W, bivar, periodograms, _, ACF = robust_period(
         y, 'db10', num_wavelets, lmb, c, zeta)
 
-    plot_robust_period(None, W, bivar, periodograms, None, ACF)
+    plot_robust_period(periods, W, bivar, periodograms, None, ACF)
