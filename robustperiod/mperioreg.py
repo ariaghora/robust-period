@@ -6,7 +6,7 @@ from multiprocessing import Process, Queue, cpu_count
 def get_fft_comp(series, j, t):
     n = len(series)
     w = 2. * np.pi * j / n
-    idx_t = np.arange(0, n)  # .reshape(-1, 1)
+    idx_t = np.arange(0, n)
     MX = np.array([np.cos(w * idx_t), np.sin(w * idx_t)]).T
     if j != n/2:
         fitrob = sm.RLM(
@@ -38,7 +38,6 @@ def process_chunk(pid, series, indices, t, out):
 def get_perio(series, t, n_process):
     n = len(series)
     g = n // 2
-
     idxs = np.array_split(np.arange(g), n_process)
 
     Q = Queue()

@@ -1,4 +1,5 @@
 import numpy as np
+import scipy
 
 
 def choose(n, k):
@@ -25,8 +26,11 @@ def p_val_g_stat(g0, N, method='author'):
     terms = np.arange(1, k1+1, dtype='int32')
     # Robust Period Equation
 
+    fac = np.math.factorial
+    binom = scipy.special.binom
+
     def event_term(k, N=N, g0=g0):
-        return (-1)**(k-1) * choose(N, k) * (1-k*g0)**(N-1)
+        return (-1)**(k-1) * binom(N, k) * (1-k*g0)**(N-1)
     # R fisher test equation
 
     def r_event_term(k, N, g0):
