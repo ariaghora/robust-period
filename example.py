@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from robustperiod import robust_period, plot_robust_period
+from robustperiod import robust_period, robust_period_full, plot_robust_period
 from robustperiod.utils import sinewave, triangle
 from statsmodels.datasets.co2.data import load_pandas
 
@@ -15,16 +15,21 @@ if __name__ == '__main__':
     tri = triangle(m, 10)
     noise = np.random.normal(0, 0.1, m)
     y = y1+y2+y3+tri+noise
-    y[m//2] += 10  # sudden spike
+    y[m // 2] += 10  # sudden spike
+
+    plt.plot(y)
+    plt.title('Dummy dataset')
+    plt.show()
 
     lmb = 1e+6
     c = 2
     num_wavelets = 8
     zeta = 1.345
 
-    periods, W, bivar, periodograms, p_vals, ACF = robust_period(
+    periods, W, bivar, periodograms, p_vals, ACF = robust_period_full(
         y, 'db10', num_wavelets, lmb, c, zeta)
     plot_robust_period(periods, W, bivar, periodograms, p_vals, ACF)
+
 
     '''
     CO_2 dataset
@@ -38,10 +43,16 @@ if __name__ == '__main__':
     plt.title('$CO_2$ dataset')
     plt.show()
 
-    lmb = 1e+6
-    c = 2
-    num_wavelets = 8
-    zeta = 1.345
-    periods, W, bivar, periodograms, p_vals, ACF = robust_period(
+    periods, W, bivar, periodograms, p_vals, ACF = robust_period_full(
         y_co2, 'db10', num_wavelets, lmb, c, zeta)
     plot_robust_period(periods, W, bivar, periodograms, p_vals, ACF)
+
+
+    '''
+    RobustPeriod on multiple series combined
+    '''
+    combined = np.array([y, y_co2]).T
+    periods_list = robust_period(combined, 'db10', num_wavelets, lmb, c, zeta)
+
+    for i, periods in enumerate(periods_list):
+        print(f'Periods for series {i+1}: {periods}')

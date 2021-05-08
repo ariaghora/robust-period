@@ -34,7 +34,7 @@ def residual_autocov(x, c):
     return huber_func((x - mu)/s, c)
 
 
-def robust_period(x, wavelet_method, num_wavelet, lmb, c, zeta=1.345):
+def robust_period_full(x, wavelet_method, num_wavelet, lmb, c, zeta=1.345):
     '''
     Params:
     - x: input signal with shape of (m, n), m is the number of observation and
@@ -100,14 +100,31 @@ def robust_period(x, wavelet_method, num_wavelet, lmb, c, zeta=1.345):
         periods.append(final_period)
     periods = np.array(periods)
 
+    periods = []
+    for p in periodograms:
+        _, final_period, _ = get_ACF_period(p)
+        periods.append(final_period)
+    periods = np.array(periods)
+    final_periods = np.unique(periods[periods > 0])
+
     return (
-        periods,       # Periods
-        W,             # Wavelets
-        bivar,         # bivar
-        periodograms,  # periodograms
-        p_vals,        # pval
-        ACF            # ACF
+        final_periods,  # Periods
+        W,              # Wavelets
+        bivar,          # bivar
+        periodograms,   # periodograms
+        p_vals,         # pval
+        ACF             # ACF
     )
+
+
+def robust_period(x, wavelet_method, num_wavelet, lmb, c, zeta=1.345):
+    assert x.ndim == 2, 'Input must be a 2D array'
+
+    periods_list = []
+    for i in range(x.shape[1]):
+        res = robust_period_full(x[:, i], wavelet_method, num_wavelet, lmb, c, zeta)
+        periods_list.append(res[0])
+    return np.array(periods_list)
 
 
 def plot_robust_period(periods, W, bivar, periodograms, p_vals, ACF):
@@ -142,8 +159,6 @@ def plot_robust_period(periods, W, bivar, periodograms, p_vals, ACF):
 
         has_period = final_periods[i] > 0
         if has_period:
-            # print(ACF)
-            # print(peaks_arr)
             axs[i, 2].scatter(peaks_arr[i], ACF[i]
                               [peaks_arr[i]], marker='*', color='red')
 
