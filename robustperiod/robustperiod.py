@@ -129,9 +129,6 @@ def plot_robust_period(periods, W, bivar, periodograms, p_vals, ACF):
         final_periods.append(final_period)
         peaks_arr.append(peaks)
 
-    acf_periods, final_periods, peaks_arr = \
-        np.array([acf_periods, final_periods, peaks_arr])
-
     fig, axs = plt.subplots(nrows, 3, sharex=False, constrained_layout=True)
     for i in range(nrows):
         axs[i, 0].plot(W[i], color='green', linewidth=1)
@@ -144,6 +141,12 @@ def plot_robust_period(periods, W, bivar, periodograms, p_vals, ACF):
         axs[i, 2].axhline(0.5, color='green')
 
         has_period = final_periods[i] > 0
+        if has_period:
+            # print(ACF)
+            # print(peaks_arr)
+            axs[i, 2].scatter(peaks_arr[i], ACF[i]
+                              [peaks_arr[i]], marker='*', color='red')
+
         axs[i, 2].set_title(
             f'ACF: acf_T={acf_periods[i]}; fin_T={final_periods[i]}; Period={has_period}', fontsize=8)
 
@@ -155,7 +158,7 @@ def plot_robust_period(periods, W, bivar, periodograms, p_vals, ACF):
     plt.xticks(fontsize=8)
     plt.show()
 
-    plt.plot(bivar, linestyle='dashed', marker='s',
+    plt.plot(np.arange(nrows)+1, bivar, linestyle='dashed', marker='s',
              label='Wavelet variance')
     plt.xlabel('Wavelet level')
     plt.ylabel('Wavelet variance')
