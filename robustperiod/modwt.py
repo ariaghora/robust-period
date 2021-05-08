@@ -1,7 +1,7 @@
 # Adopted from https://github.com/pistonly/modwtpy/blob/master/modwt.py
 
 import pywt
-import numpy as np 
+import numpy as np
 
 
 def circular_convolve_d(h_t, v_j_1, j):
@@ -12,13 +12,20 @@ def circular_convolve_d(h_t, v_j_1, j):
     return: w_j (or v_j)
     '''
     N = len(v_j_1)
+    
     L = len(h_t)
+
+    # Matching the paper
+    L_j = min(N, (2**4-1)*(L-1))
+
     w_j = np.zeros(N)
     l = np.arange(L)
+
     for t in range(N):
         index = np.mod(t - 2 ** (j - 1) * l, N)
         v_p = np.array([v_j_1[ind] for ind in index])
-        w_j[t] = (np.array(h_t) * v_p).sum()
+        # Keeping up to L_j items
+        w_j[t] = (np.array(h_t)[:L_j] * v_p[:L_j]).sum()
     return w_j
 
 
