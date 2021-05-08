@@ -1,6 +1,8 @@
 import numpy as np
+import math
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
+
 
 def huber_acf(periodogram):
     N_prime = len(periodogram)
@@ -19,17 +21,24 @@ def huber_acf(periodogram):
 
     return res
 
-def get_ACF_period(ACF, periodogram):
+
+def get_ACF_period(periodogram):
     N = len(periodogram)
     k = np.argmax(periodogram)
     res = huber_acf(periodogram)
+    res_trim = res[:int(len(res) * 0.8)]  # The paper didn't use entire ACF
+    res_scaled = 2 * ((res_trim - res_trim.min()) /
+                      (res_trim.max() - res_trim.min())) - 1
 
-    peaks, prop = find_peaks(res)
+    peaks, prop = find_peaks(res_scaled, height=0.5)
     distances = np.diff(peaks)
+
     acf_period = np.median(distances)
+    acf_period = 0 if math.isnan(acf_period) else acf_period
 
     Rk = (0.5 * ((N/(k+1)) + (N/k)) - 1, 0.5 * ((N/k) + (N/(k-1))) + 1)
-    final_period = acf_period if (Rk[1] >= acf_period >= Rk[0]) else 0
+    final_period = acf_period if \
+        (Rk[1] >= acf_period >= Rk[0]) else 0
 
     return acf_period, final_period, peaks
 
@@ -37,7 +46,7 @@ def get_ACF_period(ACF, periodogram):
 if __name__ == '__main__':
     periodograms = np.loadtxt('periodograms.csv', delimiter=',')
 
-    per = periodograms[0]
+    per = periodograms[6]
 
     N = len(per)
     k = np.argmax(per)
@@ -46,12 +55,8 @@ if __name__ == '__main__':
 
     res = huber_acf(per)
 
-    # peaks, _ = find_peaks(res)
-    # distances = np.diff(peaks)
-    # final_period = np.median(distances)
-    # print(final_period)
-
-    acfper = get_ACF_period(res, per)
+    _, _, peak_idx = get_ACF_period(per)
 
     plt.plot(res[:800])
+    plt.scatter(peak_idx, res[:800][peak_idx], color='red')
     plt.show()
