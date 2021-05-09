@@ -17,9 +17,9 @@ if __name__ == '__main__':
     y = y1+y2+y3+tri+noise
     y[m // 2] += 10  # sudden spike
 
-    plt.plot(y)
-    plt.title('Dummy dataset')
-    plt.show()
+    # plt.plot(y)
+    # plt.title('Dummy dataset')
+    # plt.show()
 
     lmb = 1e+6
     c = 2

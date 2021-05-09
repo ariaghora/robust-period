@@ -6,7 +6,7 @@ from scipy.signal import find_peaks
 
 from .modwt import modwt
 from .utils import sinewave, triangle
-from .mperioreg import m_perio_reg
+from .mperioreg_fallback import m_perio_reg
 from .huberacf import huber_acf, get_ACF_period
 from .fisher import fisher_g_test
 
@@ -82,7 +82,7 @@ def robust_period_full(x, wavelet_method, num_wavelet, lmb, c, zeta=1.345):
     p_vals = []
     for i, x in enumerate(X):
         print(f'Calculating periodogram for level {i+1}')
-        perio = m_perio_reg(x, n_process=4)
+        perio = m_perio_reg(x)
         p_val, _ = fisher_g_test(perio)
         periodograms.append(perio)
         p_vals.append(p_val)
