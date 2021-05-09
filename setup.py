@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='RobustPeriod',
-    version='0.2.0',
+    version='0.2.1',
     description=(
         'Unofficial Implementation of RobustPeriod: Time-Frequency Mining for Robust Multiple Periodicities Detection'),
     author='Aria Ghora Prabono',
