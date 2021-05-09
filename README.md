@@ -6,8 +6,10 @@ Unofficial Implementation of RobustPeriod: Time-Frequency Mining for Robust Mult
 ## Usage example
 ```python
 import numpy as np
-from robustperiod import robust_period, plot_robust_period
+import matplotlib.pyplot as plt
+from robustperiod import robust_period, robust_period_full, plot_robust_period
 from robustperiod.utils import sinewave, triangle
+from statsmodels.datasets.co2.data import load_pandas
 
 m = 1000
 y1 = sinewave(m, 20, 1)
