@@ -82,7 +82,7 @@ def robust_period_full(x, wavelet_method, num_wavelet, lmb, c, zeta=1.345):
     p_vals = []
     for i, x in enumerate(X):
         print(f'Calculating periodogram for level {i+1}')
-        perio = m_perio_reg(x, n_process=-1)
+        perio = m_perio_reg(x, n_process=4)
         p_val, _ = fisher_g_test(perio)
         periodograms.append(perio)
         p_vals.append(p_val)
