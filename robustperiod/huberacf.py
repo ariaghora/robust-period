@@ -33,8 +33,7 @@ def get_ACF_period(periodogram):
     peaks, prop = find_peaks(res_scaled, height=0.5)
     distances = np.diff(peaks)
 
-    acf_period = np.median(distances)
-    acf_period = 0 if math.isnan(acf_period) else acf_period
+    acf_period = np.median(distances) if len(distances)>0 else 0
 
     Rk = (0.5 * ((N/(k+1)) + (N/k)) - 1, 0.5 * ((N/k) + (N/(k-1))) + 1)
     final_period = acf_period if \
