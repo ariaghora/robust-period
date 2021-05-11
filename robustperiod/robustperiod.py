@@ -146,14 +146,16 @@ def plot_robust_period(periods, W, bivar, periodograms, p_vals, ACF):
         final_periods.append(final_period)
         peaks_arr.append(peaks)
 
-    fig, axs = plt.subplots(nrows, 3, sharex=False, constrained_layout=True)
+    fig, axs = plt.subplots(nrows, 3, figsize=(10, nrows*1.5))
     for i in range(nrows):
+        # print(W[i].shape)
         axs[i, 0].plot(W[i], color='green', linewidth=1)
         axs[i, 0].set(ylabel=f'Level {i+1}')
-        axs[i, 0].set_title(f'Wavelet Coef: Var={bivar[i]:.3f}', fontsize=8)
-        axs[i, 1].plot(periodograms[i][:n_prime//2], color='red', linewidth=1)
+        axs[i, 0].set_title(f'Wavelet Coef: Var={bivar[i]:.3f}', fontsize=10)
+        axs[i, 1].yaxis.get_offset_text().set_fontsize(0)
+        axs[i, 1].plot(periodograms[i, :n_prime//2], color='red', linewidth=1)
         axs[i, 1].set_title(
-            f'Periodogram: p={p_vals[i]:.2e}; per_T={per_Ts[i]}', fontsize=8)
+            f'Periodogram: p={p_vals[i]:.2e}; per_T={per_Ts[i]}', fontsize=10)
         axs[i, 2].plot(ACF[i], color='blue', linewidth=1)
         axs[i, 2].axhline(0.5, color='green')
 
@@ -163,12 +165,15 @@ def plot_robust_period(periods, W, bivar, periodograms, p_vals, ACF):
                               [peaks_arr[i]], marker='*', color='red')
 
         axs[i, 2].set_title(
-            f'ACF: acf_T={acf_periods[i]}; fin_T={final_periods[i]}; Period={has_period}', fontsize=8)
+            f'ACF: acf_T={acf_periods[i]}; fin_T={final_periods[i]}; Period={has_period}', fontsize=10)
 
         for j in range(3):
-            axs[i, j].tick_params(axis='both', which='major', labelsize=8)
-            axs[i, j].tick_params(axis='both', which='minor', labelsize=8)
+            axs[i, j].tick_params(axis='both', which='major', labelsize=10)
+            axs[i, j].tick_params(axis='both', which='minor', labelsize=10)
             axs[i, j].yaxis.get_label().set_fontsize(8)
+
+    fig.tight_layout()
+    plt.ticklabel_format(style='plain')
     plt.yticks(fontsize=8)
     plt.xticks(fontsize=8)
     plt.show()

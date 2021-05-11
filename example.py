@@ -17,9 +17,9 @@ if __name__ == '__main__':
     y = y1+y2+y3+tri+noise
     y[m // 2] += 10  # sudden spike
 
-    # plt.plot(y)
-    # plt.title('Dummy dataset')
-    # plt.show()
+    plt.plot(y)
+    plt.title('Dummy dataset')
+    plt.show()
 
     lmb = 1e+6
     c = 2
@@ -29,7 +29,6 @@ if __name__ == '__main__':
     periods, W, bivar, periodograms, p_vals, ACF = robust_period_full(
         y, 'db10', num_wavelets, lmb, c, zeta)
     plot_robust_period(periods, W, bivar, periodograms, p_vals, ACF)
-
 
     '''
     CO_2 dataset
@@ -46,7 +45,6 @@ if __name__ == '__main__':
     periods, W, bivar, periodograms, p_vals, ACF = robust_period_full(
         y_co2, 'db10', num_wavelets, lmb, c, zeta)
     plot_robust_period(periods, W, bivar, periodograms, p_vals, ACF)
-
 
     '''
     RobustPeriod on multiple series combined
