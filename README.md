@@ -1,4 +1,4 @@
-Unofficial Implementation of RobustPeriod: Time-Frequency Mining for Robust Multiple Periodicities Detection
+Unofficial Implementation of RobustPeriod: Time-Frequency Mining for Robust Multiple Periodicities Detection. 
 
 ## Installation
 `pip install --upgrade git+https://github.com/ariaghora/robust-period.git`
@@ -47,3 +47,5 @@ plot_robust_period(periods, W, bivar, periodograms, p_vals, ACF)
 <p align="center">
   <img src="resources/variance.png" width=500/>
 </p>
+
+Please note that I hacked some parts of result presentation code so the results match the paper as close as possible.
