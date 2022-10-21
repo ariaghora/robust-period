@@ -1,5 +1,7 @@
 Unofficial Implementation of RobustPeriod: Time-Frequency Mining for Robust Multiple Periodicities Detection. 
 
+> Please note that I could not fully replicate the paper, especially the optimization part. In fact, I used a different optimization method rather than the said ADMM. It is either the details in paper are insufficient or my understanding was lacking. I welcome any contribution. 
+
 ## Installation
 `pip install --upgrade git+https://github.com/ariaghora/robust-period.git`
 
