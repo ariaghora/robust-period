@@ -22,7 +22,7 @@ def huber_func(x, c):
 
 
 def MAD(x):
-    return np.mean(np.abs(x - np.median(x)))
+    return np.mean(np.abs(x - np.mean(x)))
 
 
 def residual_autocov(x, c):
